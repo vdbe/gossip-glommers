@@ -14,7 +14,7 @@
 
   outputs = inputs@{ flake-parts, nixpkgs, my-packages, rust-overlay, ... }:
     let
-      pname = "gossip-glommers";
+      pname = "gossip-glomers";
       version = "0.1.0";
 
     in
@@ -50,10 +50,10 @@
           # Per-system attributes can be defined here. The self' and inputs'
           # module parameters provide easy access to attributes of the same
           # system.
-          packages = {
-            default = myRustBuild;
+          packages = rec {
+            default = gossip-glomers;
             inherit (mypkgs) maelstrom;
-            gossip-glommers = myRustBuild;
+            gossip-glomers = myRustBuild;
           };
 
           devshells.default = {

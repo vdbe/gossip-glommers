@@ -1,5 +1,5 @@
 [package]
-name = "gossip-glommers"
+name = "gossip-glomers"
 version = "0.1.0"
 edition = "2021"
 

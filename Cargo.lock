@@ -121,7 +121,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "gossip-glommers"
+name = "gossip-glomers"
 version = "0.1.0"
 dependencies = [
  "actix",
