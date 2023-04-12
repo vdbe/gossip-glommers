@@ -6,10 +6,12 @@ use serde::{Deserialize, Serialize};
 
 use echo::{Echo, EchoOk};
 use formatter::NewLineFormatter;
+use generate::{Generate, GenerateOk};
 use init::{Init, InitOk};
 
 mod echo;
 mod formatter;
+mod generate;
 mod init;
 
 pub type ActorResult = anyhow::Result<()>;
@@ -116,6 +118,8 @@ pub enum GlommerPayload {
     InitOk(InitOk),
     Echo(Echo),
     EchoOk(EchoOk),
+    Generate(Generate),
+    GenerateOk(GenerateOk),
 }
 
 impl MyActor {
@@ -162,6 +166,22 @@ impl MyActor {
                 let actor_message = ActorMessage {
                     message,
                     payload: echo_ok,
+                };
+
+                addr.send(actor_message).await
+            }
+            GlommerPayload::Generate(generate) => {
+                let actor_message = ActorMessage {
+                    message,
+                    payload: generate,
+                };
+
+                addr.send(actor_message).await
+            }
+            GlommerPayload::GenerateOk(generate_ok) => {
+                let actor_message = ActorMessage {
+                    message,
+                    payload: generate_ok,
                 };
 
                 addr.send(actor_message).await
