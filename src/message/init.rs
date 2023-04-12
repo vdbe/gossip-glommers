@@ -1,6 +1,6 @@
 use actix::prelude::*;
 use serde::{Deserialize, Serialize};
-use tracing::info;
+use tracing::trace;
 
 use super::{ActorMessage, GlommerPayload, MyActor};
 use crate::ActorResult;
@@ -26,7 +26,7 @@ impl Handler<ActorMessage<Init>> for MyActor {
     type Result = ActorResult;
 
     fn handle(&mut self, msg: ActorMessage<Init>, _ctx: &mut Self::Context) -> Self::Result {
-        info!("Init received");
+        trace!("Init received");
 
         self.node_id = msg.payload.node_id;
         self.node_ids = msg.payload.node_ids;
@@ -40,7 +40,7 @@ impl Handler<ActorMessage<InitOk>> for MyActor {
     type Result = ActorResult;
 
     fn handle(&mut self, _msg: ActorMessage<InitOk>, _ctx: &mut Self::Context) -> Self::Result {
-        info!("InitOk received");
+        trace!("InitOk received");
 
         Ok(())
     }

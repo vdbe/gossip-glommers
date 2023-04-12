@@ -1,10 +1,11 @@
-use std::{collections::HashMap, fmt, io::StdoutLock};
+use std::{collections::HashMap, fmt, io::StdoutLock, time::Duration};
 
-use actix::prelude::*;
+use actix::{clock::Interval, prelude::*};
+use tokio::time;
+use tracing::trace;
 
 use formatter::NewLineFormatter;
 pub use message::{GlommerMessage, GlommerPayload};
-use tracing::info;
 
 mod formatter;
 mod message;
@@ -21,6 +22,7 @@ pub struct MyActor {
     topology: HashMap<String, Vec<String>>,
     messages: Vec<usize>,
 
+    pub interval: Interval,
     output: Output,
 }
 
@@ -41,6 +43,8 @@ impl Default for MyActor {
         let stdout = std::io::stdout().lock();
         let output = serde_json::Serializer::with_formatter(stdout, NewLineFormatter::new());
 
+        let interval = time::interval(Duration::from_millis(1000));
+
         Self {
             id: 1,
 
@@ -50,6 +54,7 @@ impl Default for MyActor {
             topology: HashMap::new(),
             messages: Vec::new(),
 
+            interval,
             output,
         }
     }
@@ -59,6 +64,26 @@ impl Actor for MyActor {
     type Context = Context<Self>;
 
     fn started(&mut self, _ctx: &mut Context<Self>) {
-        info!("MyActor is alive");
+        trace!("MyActor is alive");
+    }
+}
+
+#[derive(Debug, Copy, Clone, Message)]
+#[rtype(result = "anyhow::Result<()>")]
+pub enum Event {
+    Wake,
+}
+
+impl Handler<Event> for MyActor {
+    type Result = anyhow::Result<()>;
+
+    fn handle(&mut self, msg: Event, _ctx: &mut Self::Context) -> Self::Result {
+        match msg {
+            Event::Wake => {
+                trace!("Wake");
+            }
+        }
+
+        Ok(())
     }
 }

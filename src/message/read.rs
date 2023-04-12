@@ -1,6 +1,6 @@
 use actix::prelude::*;
 use serde::{Deserialize, Serialize};
-use tracing::info;
+use tracing::trace;
 
 use super::{ActorMessage, GlommerPayload, MyActor};
 use crate::ActorResult;
@@ -25,7 +25,7 @@ impl Handler<ActorMessage<Read>> for MyActor {
     type Result = ActorResult;
 
     fn handle(&mut self, msg: ActorMessage<Read>, _ctx: &mut Self::Context) -> Self::Result {
-        info!("Read received");
+        trace!("Read received");
 
         let payload = GlommerPayload::ReadOk(ReadOk {
             messages: self.messages.clone(),
@@ -39,7 +39,7 @@ impl Handler<ActorMessage<ReadOk>> for MyActor {
     type Result = ActorResult;
 
     fn handle(&mut self, _msg: ActorMessage<ReadOk>, _ctx: &mut Self::Context) -> Self::Result {
-        info!("ReadOk received");
+        trace!("ReadOk received");
 
         Ok(())
     }

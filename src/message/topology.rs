@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use actix::prelude::*;
 use serde::{Deserialize, Serialize};
-use tracing::info;
+use tracing::trace;
 
 use super::{ActorMessage, GlommerPayload, MyActor};
 use crate::ActorResult;
@@ -27,7 +27,7 @@ impl Handler<ActorMessage<Topology>> for MyActor {
     type Result = ActorResult;
 
     fn handle(&mut self, msg: ActorMessage<Topology>, _ctx: &mut Self::Context) -> Self::Result {
-        info!("Topology received");
+        trace!("Topology received");
 
         self.topology = msg.payload.topology;
 
@@ -41,7 +41,7 @@ impl Handler<ActorMessage<TopologyOk>> for MyActor {
     type Result = ActorResult;
 
     fn handle(&mut self, _msg: ActorMessage<TopologyOk>, _ctx: &mut Self::Context) -> Self::Result {
-        info!("TopologyOk received");
+        trace!("TopologyOk received");
 
         Ok(())
     }
