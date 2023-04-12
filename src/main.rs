@@ -20,15 +20,13 @@ async fn main() -> anyhow::Result<()> {
         serde_json::Deserializer::from_reader(stdin).into_iter::<GlommerMessage<GlommerPayload>>();
 
     // start new actor
-    let addr = MyActor::new().start();
+    let addr = MyActor::default().start();
 
     for input in inputs {
         let glommer_message =
             input.context("Maelstrom input from STDIN could not be deserialized")?;
         MyActor::send_glommer_message(&addr, glommer_message).await?;
     }
-
-    dbg!(addr);
 
     Ok(())
 }

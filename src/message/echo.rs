@@ -2,7 +2,8 @@ use actix::prelude::*;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use super::{ActorMessage, ActorResult, GlommerPayload, MyActor};
+use super::{ActorMessage, GlommerPayload, MyActor};
+use crate::ActorResult;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Echo {
@@ -14,11 +15,11 @@ pub struct EchoOk {
     echo: String,
 }
 
-impl Message for ActorMessage<EchoOk> {
+impl Message for ActorMessage<Echo> {
     type Result = ActorResult;
 }
 
-impl Message for ActorMessage<Echo> {
+impl Message for ActorMessage<EchoOk> {
     type Result = ActorResult;
 }
 

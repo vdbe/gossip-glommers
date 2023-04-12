@@ -2,7 +2,8 @@ use actix::prelude::*;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use super::{ActorMessage, ActorResult, GlommerPayload, MyActor};
+use super::{ActorMessage, GlommerPayload, MyActor};
+use crate::ActorResult;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Generate;
@@ -12,11 +13,11 @@ pub struct GenerateOk {
     id: String,
 }
 
-impl Message for ActorMessage<GenerateOk> {
+impl Message for ActorMessage<Generate> {
     type Result = ActorResult;
 }
 
-impl Message for ActorMessage<Generate> {
+impl Message for ActorMessage<GenerateOk> {
     type Result = ActorResult;
 }
 

@@ -2,9 +2,8 @@ use actix::prelude::*;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use crate::GlommerPayload;
-
-use super::{ActorMessage, ActorResult, MyActor};
+use super::{ActorMessage, GlommerPayload, MyActor};
+use crate::ActorResult;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Init {
@@ -15,11 +14,11 @@ pub struct Init {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InitOk;
 
-impl Message for ActorMessage<InitOk> {
+impl Message for ActorMessage<Init> {
     type Result = ActorResult;
 }
 
-impl Message for ActorMessage<Init> {
+impl Message for ActorMessage<InitOk> {
     type Result = ActorResult;
 }
 
