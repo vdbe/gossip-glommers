@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use actix::prelude::*;
 use serde::{Deserialize, Serialize};
 use tracing::trace;
@@ -10,7 +12,7 @@ pub struct Read;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReadOk {
-    messages: Vec<usize>,
+    messages: HashSet<usize>,
 }
 
 impl Message for ActorMessage<Read> {

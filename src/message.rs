@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use broadcast::{Broadcast, BroadcastOk};
 use echo::{Echo, EchoOk};
 use generate::{Generate, GenerateOk};
+use gossip::{Gossip, GossipOk};
 use init::{Init, InitOk};
 use read::{Read, ReadOk};
 use topology::{Topology, TopologyOk};
@@ -12,6 +13,7 @@ use topology::{Topology, TopologyOk};
 mod broadcast;
 mod echo;
 mod generate;
+pub mod gossip;
 mod init;
 mod read;
 mod topology;
@@ -63,10 +65,38 @@ pub enum GlommerPayload {
     ReadOk(ReadOk),
     Topology(Topology),
     TopologyOk(TopologyOk),
+    Gossip(Gossip),
+    GossipOk(GossipOk),
 }
 
 use super::MyActor;
 impl MyActor {
+    fn send(
+        &mut self,
+        dest: String,
+        in_reply_to: Option<usize>,
+        payload: GlommerPayload,
+    ) -> anyhow::Result<usize> {
+        let reply = GlommerMessage {
+            src: self.node_id.clone(),
+            dest,
+            body: GlommerBody {
+                id: Some(self.id),
+                in_reply_to,
+                payload,
+            },
+        };
+
+        let mid = self.id;
+        self.id += 1;
+
+        reply
+            .serialize(&mut self.output)
+            .context("serialize response to init")?;
+
+        Ok(mid)
+    }
+
     fn reply(
         &mut self,
         message: GlommerMessage<()>,
@@ -197,6 +227,21 @@ impl MyActor {
                 let actor_message = ActorMessage {
                     message,
                     payload: topology_ok,
+                };
+
+                addr.send(actor_message).await
+            }
+            GlommerPayload::Gossip(gossip) => {
+                let actor_message = ActorMessage {
+                    message,
+                    payload: gossip,
+                };
+                addr.send(actor_message).await
+            }
+            GlommerPayload::GossipOk(gossip_ok) => {
+                let actor_message = ActorMessage {
+                    message,
+                    payload: gossip_ok,
                 };
 
                 addr.send(actor_message).await

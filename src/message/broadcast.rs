@@ -27,7 +27,7 @@ impl Handler<ActorMessage<Broadcast>> for MyActor {
     fn handle(&mut self, msg: ActorMessage<Broadcast>, _ctx: &mut Self::Context) -> Self::Result {
         trace!("Broadcast received");
 
-        self.messages.push(msg.payload.message);
+        self.messages.insert(msg.payload.message);
 
         let payload = GlommerPayload::BroadcastOk(BroadcastOk);
 

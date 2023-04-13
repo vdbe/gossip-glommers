@@ -1,11 +1,19 @@
-use std::{collections::HashMap, fmt, io::StdoutLock, time::Duration};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt,
+    io::StdoutLock,
+    time::Duration,
+};
 
 use actix::{clock::Interval, prelude::*};
 use tokio::time;
 use tracing::trace;
 
 use formatter::NewLineFormatter;
-pub use message::{GlommerMessage, GlommerPayload};
+pub use message::{
+    gossip::{EventGossip, GossipState},
+    GlommerMessage, GlommerPayload,
+};
 
 mod formatter;
 mod message;
@@ -20,7 +28,9 @@ pub struct MyActor {
     node_ids: Vec<String>,
 
     topology: HashMap<String, Vec<String>>,
-    messages: Vec<usize>,
+    messages: HashSet<usize>,
+
+    gossip_state: GossipState,
 
     pub interval: Interval,
     output: Output,
@@ -52,8 +62,9 @@ impl Default for MyActor {
             node_ids: Vec::new(),
 
             topology: HashMap::new(),
-            messages: Vec::new(),
+            messages: HashSet::new(),
 
+            gossip_state: GossipState::default(),
             interval,
             output,
         }
@@ -71,7 +82,7 @@ impl Actor for MyActor {
 #[derive(Debug, Copy, Clone, Message)]
 #[rtype(result = "anyhow::Result<()>")]
 pub enum Event {
-    Wake,
+    Log,
 }
 
 impl Handler<Event> for MyActor {
@@ -79,9 +90,7 @@ impl Handler<Event> for MyActor {
 
     fn handle(&mut self, msg: Event, _ctx: &mut Self::Context) -> Self::Result {
         match msg {
-            Event::Wake => {
-                trace!("Wake");
-            }
+            Event::Log => {}
         }
 
         Ok(())

@@ -1,46 +1,23 @@
 use std::time::Duration;
 
-use actix::prelude::*;
-use anyhow::Context as AnyhowContext;
-use tokio::{
-    io::{self, AsyncBufReadExt, BufReader},
-    signal, time,
+use actix::{
+    clock::{interval_at, Instant},
+    prelude::*,
 };
+use anyhow::Context as AnyhowContext;
+use rand::Rng;
+use tokio::io::{self, AsyncBufReadExt, BufReader};
 
 use tracing::info;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
-use gossip_glomers::{Event, GlommerMessage, GlommerPayload, MyActor};
-
-async fn shutdown_signal() {
-    let ctrl_c = async {
-        signal::ctrl_c()
-            .await
-            .expect("failed to install Ctrl+C handler");
-    };
-
-    #[cfg(unix)]
-    let terminate = async {
-        signal::unix::signal(signal::unix::SignalKind::terminate())
-            .expect("failed to install signal handler")
-            .recv()
-            .await;
-    };
-
-    #[cfg(not(unix))]
-    let terminate = std::future::pending::<()>();
-
-    tokio::select! {
-        _ = ctrl_c => {},
-        _ = terminate => {},
-    }
-}
+use gossip_glomers::{EventGossip, GlommerMessage, GlommerPayload, MyActor};
 
 #[actix::main]
 async fn main() -> anyhow::Result<()> {
     // start tracering subscriber
     tracing_subscriber::registry()
-        .with(fmt::layer().with_writer(std::io::stderr))
+        .with(fmt::layer().with_writer(std::io::stderr).with_ansi(false))
         .with(EnvFilter::from_default_env())
         .init();
 
@@ -53,7 +30,17 @@ async fn main() -> anyhow::Result<()> {
     // start new actor
     let addr = MyActor::start_default();
 
-    let mut interval = time::interval(Duration::from_millis(1000));
+    let mut rng = rand::thread_rng();
+
+    // It is better to spread the gossip messages
+    let gossip_interval_duration = 250;
+    let gossip_start =
+        Instant::now() + Duration::from_millis(rng.gen_range(20..=gossip_interval_duration));
+    let mut gossip_interval = interval_at(
+        gossip_start,
+        Duration::from_millis(gossip_interval_duration),
+    );
+    gossip_interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
 
     // for input in inputs {
     //     let glommer_message =
@@ -80,13 +67,12 @@ async fn main() -> anyhow::Result<()> {
                 }
 
             }
-            _ = interval.tick() => {
-                addr.send(Event::Wake).await.context("Failed to send wake event")??;
+            _ = gossip_interval.tick() => {
+                addr.send(EventGossip).await.context("Failed to send gossip event")??;
             }
-            _ = shutdown_signal() => {
-                tracing::info!("Shutdown signal received, starting graceful shutdown");
-                break;
-            }
+            //_ = log_interval.tick() => {
+            //    addr.send(Event::Log).await.context("Failed to send log event")??;
+            //}
         }
     }
 

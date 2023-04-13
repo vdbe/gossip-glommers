@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use actix::prelude::*;
 use serde::{Deserialize, Serialize};
-use tracing::trace;
+use tracing::{debug, trace};
 
 use super::{ActorMessage, GlommerPayload, MyActor};
 use crate::ActorResult;
@@ -30,6 +30,16 @@ impl Handler<ActorMessage<Topology>> for MyActor {
         trace!("Topology received");
 
         self.topology = msg.payload.topology;
+
+        self.gossip_state.neighberhood = self
+            .topology
+            .remove(&self.node_id)
+            .unwrap_or_else(|| panic!("no topolog given for node {}", self.node_id));
+
+        debug!(
+            "recevied neighberhood: {:?}",
+            self.gossip_state.neighberhood
+        );
 
         let payload = GlommerPayload::TopologyOk(TopologyOk);
 
